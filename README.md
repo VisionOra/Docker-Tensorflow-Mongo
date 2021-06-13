@@ -88,6 +88,77 @@ Now lets connect our mongo database with our Notebook which is outside the conta
 
 
 
+# Model Deployment
+
+Now lets move forward to the model deployment part. First of all we will build a docker file, then build image from that docker file and at the end we just start the docker file. So lets start.
+
+
+## First we have to make docker file
+
+
+you can find this docker file in the repository
+```
+# I am going to pull a tensorflow image which is already uploaded to docker hub
+FROM tensorflow/tensorflow
+
+# Adding my maintainer name 
+MAINTAINER sohaibanwaar36@gmail.com
+
+# Copying my super resolution code into the docker container
+COPY  ./super_resolution ./tf_model
+
+# Running ls just for testing
+RUN ls
+
+# Identifying my working directory
+WORKDIR tf_model 
+
+# Installing python packages
+# This command will automatically ignore packages which throw error
+RUN cat requirments.txt | sed -e '/^\s*#.*$/d' -e '/^\s*$/d' | xargs -n 1 pip install
+
+
+# And at last this is our entry point. When-ever we execute our container this command automatically run
+CMD ["python", "./main.py"] 
+```
+
+
+Now to build this file you need a docker build command
+
+```
+sudo docker build -t super_res_image .
+```
+where super_res_image is the name of image. You can change name after creating an image also by this command
+
+```
+sudo docker image tag cc8fc3b5be6b sohaibanwaar/tfmodel:latest
+```
+if all the things going good then 
+
+> lets start the container
+
+```
+docker container run -d super_res_image
+```
+
+Now you Model is deployed on a docker container yaaayyy.
+
+
+
+# Testing
+
+Now you have to just store an image and a request id to mongo db. 
+
+* Image insertion to the mongo db container
+* super-res (tf container) is listining to the mongodb when-ever a request is inserted to the mongodb our super-res will automatically call model predictions on it.
+* Super_res model will store the result back to the mongo db which we can get from the notebook again.
+
+
+> Testing Notebook
+[Notebook](./mongo_connection.ipynb) 
+
+
+
 
 # Author 
 
